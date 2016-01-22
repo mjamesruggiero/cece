@@ -22,48 +22,48 @@
           (mapcat (fn [[key value]] [[:dt key] [:dd value]])
                   (:properties data))]]))
 
-(defrecord Coffee [name price])
+(defrecord Transaction [amount description date])
 
-(def ristretto
-  (->Coffee "Ristretto" "$1.80"))
+(def cvs
+  (->Transaction "1.80" "cvs drugs" "2015-12-01"))
 
-(def macchiato
-  (->Coffee "Macchiato" "$1.80"))
+(def storage
+  (->Transaction "1.80" "a-1 storage" "2015-12-01"))
 
-(def latte
-  (->Coffee "Latte" "$3.20"))
+(def amazon
+  (->Transaction "1.80" "amazon.com" "2015-12-01"))
 
-(def coffees [latte macchiato ristretto])
+(def transactions [amazon storage cvs])
 
 (defn index-data [ctx]
-  coffees)
+  transactions)
 
 (defresource index
   :allowed-methods [:options :get :post :delete]
   :available-media-types default-media-types
   :handle-ok index-data)
 
-(defresource coffee [id]
+(defresource transaction [id]
   :allowed-methods [:options :get]
   :available-media-types ["text/html" "application/json"]
   :handle-ok (fn [_]
                {:properties
-                (nth coffees (Integer/parseInt id))
+                (nth transactions (Integer/parseInt id))
                 :links [{:rel ["self"]
-                         :href (str "/coffees/" id)}
+                         :href (str "/transactions/" id)}
                         {:rel ["listing"]
-                         :href "/coffees"}]}))
+                         :href "/transactions"}]}))
 
 
 (defroutes app-routes
   (OPTIONS "/" []
            {:headers {"Allow:" "GET, POST, DELETE, OPTIONS"}})
   (ANY "/" [] index)
-  (ANY "/coffees" [] index)
-  (OPTIONS "/coffees/:id" []
+  (ANY "/transactions" [] index)
+  (OPTIONS "/transactions/:id" []
        {:headers {"Allow:" "GET, OPTIONS"}})
-  (ANY "/coffees/:id" [id]
-       (coffee id))
+  (ANY "/transactions/:id" [id]
+       (transaction id))
   (route/resources "/")
   (route/not-found "Not found"))
 
